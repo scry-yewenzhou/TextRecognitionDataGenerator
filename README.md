@@ -80,19 +80,17 @@ trdg -l ar \
 ## English
 
 ```
-cd /home/SyntheticGenerator/
-git checkout main
 cd /home/PaddleOCR/arabic-recognition-training/
 conda activate paddle
-
-trdg -l ar \
+trdg -l en \
      -t 8 \
      -c 100 \
      -w 1 \
+     -r \
      -b 1 \
      -na 2 \
      -ws \
-     --dict ./gen_dictionaries/combined_cleaned.txt \
+     --dict ./gen_dictionaries/latin_numbers_other_improved.txt \
      --font_dir ./useful_fonts/ \
-     --output_dir ./synthetic_data/ar-words-100/
+     --output_dir ./synthetic_data/en-words-100/
 ```
