@@ -2,6 +2,7 @@ import argparse
 import errno
 import os
 import sys
+from pathlib import Path
 
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
@@ -9,6 +10,8 @@ import random as rnd
 import string
 import sys
 from multiprocessing import Pool
+import numpy as np
+import scipy.stats as stats
 
 from tqdm import tqdm
 
@@ -273,7 +276,7 @@ def parse_arguments():
         type=margins,
         nargs="?",
         help="Define the margins around the text when rendered. In pixels",
-        default=(5, 5, 5, 5),
+        default=(0, 0, 0, 0),
     )
     parser.add_argument(
         "-fi",
@@ -341,6 +344,27 @@ def parse_arguments():
         help="Define the image mode to be used. RGB is default, L means 8-bit grayscale images, 1 means 1-bit binary images stored with one pixel per byte, etc.",
         default="RGB",
     )
+    parser.add_argument(
+        "-rm",
+        "--random_margin",
+        action="store_true",
+        help="whether use random margin, default False",
+        default=False,
+    )
+    parser.add_argument(
+        "-rfs",
+        "--random_fontsize",
+        action="store_true",
+        help="whether use random font size, default False",
+        default=False,
+    )
+    parser.add_argument(
+        "-tf",
+        "--top_4_fonts",
+        action="store_true",
+        help="whether use only top 4 fonts",
+        default=False,
+    )
     return parser.parse_args()
 
 
@@ -367,6 +391,9 @@ def main():
                 lang_dict = [l for l in d.read().splitlines() if len(l) > 0]
         else:
             sys.exit("Cannot open dict")
+        # lang_dict = ['آ', 'أ']
+        # lang_dict += ['ة', 'ى']
+        # lang_dict = ['ء', 'ش']
     else:
         lang_dict = load_dict(
             os.path.join(os.path.dirname(__file__), "dicts", args.language + ".txt")
@@ -377,8 +404,11 @@ def main():
         fonts = [
             os.path.join(args.font_dir, p)
             for p in os.listdir(args.font_dir)
-            if os.path.splitext(p)[1] == ".ttf"
+            if (os.path.splitext(p)[1] == ".ttf" or os.path.splitext(p)[1] == ".otf")
         ]
+        
+        # fonts = [f for f in fonts if (Path(f).stem.startswith("Tajawal"))]
+        # print(fonts)
     elif args.font:
         if os.path.isfile(args.font):
             fonts = [args.font]
@@ -386,9 +416,17 @@ def main():
             sys.exit("Cannot open font")
     else:
         fonts = load_fonts(args.language)
-
+    
+    if args.top_4_fonts:
+        fonts = [f for f in fonts if (Path(f).stem.startswith("Calibri") or 
+                                      Path(f).stem.startswith("Arial") or
+                                      Path(f).stem.startswith("Tahoma") or
+                                      Path(f).stem.startswith("Courier"))]
+    
     # Creating synthetic sentences (or word)
     strings = []
+    # args.count = len(lang_dict)
+    # print(args.count)
 
     if args.use_wikipedia:
         strings = create_strings_from_wikipedia(args.length, args.count, args.language)
@@ -415,35 +453,52 @@ def main():
         strings = create_strings_from_dict(
             args.length, args.random, args.count, lang_dict
         )
+        # strings = lang_dict
+        # args.count = 4
+        # strings = ['آأ'] * args.count
+        # strings = ['حش'] * args.count
+        # strings = ['آأءش'] * args.count
+        # ['ءش'] * args.count
+        # print(strings)
+        
+    # if args.language == "ar":
+    #     from arabic_reshaper import ArabicReshaper
+    #     from bidi.algorithm import get_display
+        # print("before", strings)
 
-    if args.language == "ar":
-        from arabic_reshaper import ArabicReshaper
-        from bidi.algorithm import get_display
-
-        arabic_reshaper = ArabicReshaper()
-        strings = [
-            " ".join(
-                [get_display(arabic_reshaper.reshape(w)) for w in s.split(" ")[::-1]]
-            )
-            for s in strings
-        ]
     if args.case == "upper":
         strings = [x.upper() for x in strings]
     if args.case == "lower":
         strings = [x.lower() for x in strings]
 
-    string_count = len(strings)
+    if args.random_fontsize:
+        # from 9pt - 26pt
+        # which is 12px - 38px
+        # most popular 13pt (17px)
+        lower, upper = 12, 38
+        mu, sigma = 17, 9
+        Fontsize = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
+        fontsize = Fontsize.rvs(len(strings)).astype(int)
+    else:
+        fontsize = [args.format] * len(strings)
 
+    string_count = len(strings)
+    # print(fonts)
+    rand_fonts = [fonts[rnd.randrange(0, len(fonts))] for _ in range(0, string_count)]
+    # rand_fonts = fonts
+    # print(rand_fonts)
     p = Pool(args.thread_count)
+
+
     for _ in tqdm(
         p.imap_unordered(
             FakeTextDataGenerator.generate_from_tuple,
             zip(
                 [i for i in range(0, string_count)],
                 strings,
-                [fonts[rnd.randrange(0, len(fonts))] for _ in range(0, string_count)],
+                rand_fonts,
                 [args.output_dir] * string_count,
-                [args.format] * string_count,
+                fontsize,
                 [args.extension] * string_count,
                 [args.skew_angle] * string_count,
                 [args.random_skew] * string_count,
@@ -469,6 +524,8 @@ def main():
                 [args.stroke_fill] * string_count,
                 [args.image_mode] * string_count,
                 [args.output_bboxes] * string_count,
+                [args.random_margin] * string_count,
+                [args.language] * string_count,
             ),
         ),
         total=args.count,
@@ -483,10 +540,24 @@ def main():
         ) as f:
             for i in range(string_count):
                 file_name = str(i) + "." + args.extension
+                font = rand_fonts[i]
+                font = Path(font).stem
                 label = strings[i]
                 if args.space_width == 0:
                     label = label.replace(" ", "")
-                f.write("{} {}\n".format(file_name, label))
+                f.write(f"{file_name}\t{label}\n")
+
+        # with open(
+        #     os.path.join(args.output_dir, "labels.txt"), "r", encoding="utf8"
+        # ) as f:
+        #     labels = []
+        #     for line in f.readlines():
+        #         try:
+        #             image, font, label = line.strip().split("\t")
+        #             labels.append(label)
+        #         except ValueError:
+        #             print("error", line)
+        #     print("after", labels)
 
 
 if __name__ == "__main__":

@@ -1,8 +1,10 @@
 import random as rnd
 from typing import Tuple
 from PIL import Image, ImageColor, ImageDraw, ImageFilter, ImageFont
-
-from trdg.utils import get_text_width, get_text_height
+from pathlib import Path
+from trdg.utils import get_text_width, get_text_height, get_text_width_height, get_piece_widths
+import numpy as np
+import scipy.stats as stats
 
 # Thai Unicode reference: https://jrgraphix.net/r/Unicode/0E00-0E7F
 TH_TONE_MARKS = [
@@ -31,6 +33,7 @@ def generate(
     word_split: bool,
     stroke_width: int = 0,
     stroke_fill: str = "#282828",
+    language: str = "en",
 ) -> Tuple:
     if orientation == 0:
         return _generate_horizontal_text(
@@ -44,6 +47,7 @@ def generate(
             word_split,
             stroke_width,
             stroke_fill,
+            language,
         )
     elif orientation == 1:
         return _generate_vertical_text(
@@ -82,29 +86,22 @@ def _generate_horizontal_text(
     word_split: bool,
     stroke_width: int = 0,
     stroke_fill: str = "#282828",
+    language: str = "en",
 ) -> Tuple:
+    """
+    Args:
+        word_split: Split on words instead of on characters (preserves ligatures, no character spacing)
+        space_width: Define the width of the spaces between words. 2.0 means twice the normal space width
+        character_spacing: Define the width of the spaces between characters. 2 means two pixels 
+    """
     image_font = ImageFont.truetype(font=font, size=font_size)
-
-    space_width = int(get_text_width(image_font, " ") * space_width)
-
-    if word_split:
-        splitted_text = []
-        for w in text.split(" "):
-            splitted_text.append(w)
-            splitted_text.append(" ")
-        splitted_text.pop()
-    else:
-        splitted_text = text
-
-    piece_widths = [
-        _compute_character_width(image_font, p) if p != " " else space_width
-        for p in splitted_text
-    ]
-    text_width = sum(piece_widths)
-    if not word_split:
-        text_width += character_spacing * (len(text) - 1)
-
-    text_height = max([get_text_height(image_font, p) for p in splitted_text])
+    # space_width = int(get_text_width(image_font, " ") * space_width)
+    x0, y0, x1, y1 = get_text_width_height(font=font,
+                                           font_size=font_size,
+                                           text=text,
+                                           stroke_width=stroke_width,
+                                           language=language)
+    text_width, text_height = (x1-x0), (y1-y0)
 
     txt_img = Image.new("RGBA", (text_width, text_height), (0, 0, 0, 0))
     txt_mask = Image.new("RGB", (text_width, text_height), (0, 0, 0))
@@ -114,6 +111,10 @@ def _generate_horizontal_text(
     txt_mask_draw.fontmode = "1"
 
     colors = [ImageColor.getrgb(c) for c in text_color.split(",")]
+    # colors = rnd.sample([ImageColor.getrgb("black"), 
+    #                      ImageColor.getrgb("blue"),
+    #                      ImageColor.getrgb("red"),
+    #                      ImageColor.getrgb("green")], 1)
     c1, c2 = colors[0], colors[-1]
 
     fill = (
@@ -130,24 +131,31 @@ def _generate_horizontal_text(
         rnd.randint(min(stroke_c1[1], stroke_c2[1]), max(stroke_c1[1], stroke_c2[1])),
         rnd.randint(min(stroke_c1[2], stroke_c2[2]), max(stroke_c1[2], stroke_c2[2])),
     )
+    if language == "en":
+        direction = "ltr"
+    elif language == "ar":
+        direction = "rtl"
 
-    for i, p in enumerate(splitted_text):
-        txt_img_draw.text(
-            (sum(piece_widths[0:i]) + i * character_spacing * int(not word_split), 0),
-            p,
-            fill=fill,
-            font=image_font,
-            stroke_width=stroke_width,
-            stroke_fill=stroke_fill,
-        )
-        txt_mask_draw.text(
-            (sum(piece_widths[0:i]) + i * character_spacing * int(not word_split), 0),
-            p,
-            fill=((i + 1) // (255 * 255), (i + 1) // 255, (i + 1) % 255),
-            font=image_font,
-            stroke_width=stroke_width,
-            stroke_fill=stroke_fill,
-        )
+    txt_img_draw.text(
+        (-x0, -y0),
+        text,
+        fill=fill,
+        font=image_font,
+        stroke_width=stroke_width,
+        stroke_fill=stroke_fill,
+        direction=direction,
+        language=language,
+    )
+    txt_mask_draw.text(
+        (-x0, -y0),
+        text,
+        fill=((0 + 1) // (255 * 255), (0 + 1) // 255, (0 + 1) % 255),
+        font=image_font,
+        stroke_width=stroke_width,
+        stroke_fill=stroke_fill,
+        direction=direction,
+        language=language
+    )
 
     if fit:
         return txt_img.crop(txt_img.getbbox()), txt_mask.crop(txt_img.getbbox())

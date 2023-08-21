@@ -146,3 +146,52 @@ def get_text_height(image_font: ImageFont, text: str) -> int:
     Get the width of a string when rendered with a given font
     """
     return image_font.getsize(text)[1]
+
+def get_text_width_height(font: str, font_size: int,
+                          text: str, stroke_width: int,
+                          language: str) -> Tuple:
+    """return width and height of text. Designed specifically for Arabic"""
+    from PIL.ImageFont import FreeTypeFont
+    font_instance = FreeTypeFont(font=font,
+                                 size=font_size,
+                                 index=0,
+                                 encoding='',
+                                 layout_engine=None)
+    # by default the anchor is top left
+    if language == "en":
+        direction = "ltr"
+    elif language == "ar":
+        direction = "rtl"
+
+    bbox = font_instance.getbbox(text,
+                                 mode='',
+                                 direction=direction,
+                                 features=None,
+                                 language=language,
+                                 stroke_width=stroke_width,
+                                 anchor=None)
+    return bbox
+
+
+def get_piece_widths(font: str, font_size: int, text: str, 
+                     space_width: int, language: str) -> float:
+    """Return length of each characters. Designed specifically for Arabic"""
+    from PIL.ImageFont import FreeTypeFont
+    font_instance = FreeTypeFont(font=font,
+                                 size=font_size,
+                                 index=0,
+                                 encoding='',
+                                 layout_engine=None)
+    if language == "en":
+        direction = "ltr"
+    elif language == "ar":
+        direction = "rtl"
+
+    res = []
+    for c in text:
+        if c != " ":
+            res.append(font_instance.getlength(text=c, mode='', direction=direction, 
+                                               features=None, language=language))
+        else:
+            res.append(space_width)
+    return res

@@ -5,6 +5,8 @@ from PIL import Image, ImageFilter, ImageStat
 
 from trdg import computer_text_generator, background_generator, distorsion_generator
 from trdg.utils import mask_to_bboxes, make_filename_valid
+import numpy as np
+import scipy.stats as stats
 
 try:
     from trdg import handwritten_text_generator
@@ -54,10 +56,20 @@ class FakeTextDataGenerator(object):
         stroke_fill: str = "#282828",
         image_mode: str = "RGB",
         output_bboxes: int = 0,
+        random_margin: bool = False,
+        language: str = "en",
     ) -> Image:
         image = None
 
-        margin_top, margin_left, margin_bottom, margin_right = margins
+        if random_margin:
+            # lower, upper = 0, 10
+            # mu, sigma = 0, 3
+            lower, upper = 0, 5
+            mu, sigma = 2, 1
+            X = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
+            margins = X.rvs(4).astype(int)
+
+        margin_top, margin_left, margin_bottom, margin_right = margins        
         horizontal_margin = margin_left + margin_right
         vertical_margin = margin_top + margin_bottom
 
@@ -81,6 +93,7 @@ class FakeTextDataGenerator(object):
                 word_split,
                 stroke_width,
                 stroke_fill,
+                language,
             )
         random_angle = rnd.randint(0 - skewing_angle, skewing_angle)
 
@@ -126,18 +139,21 @@ class FakeTextDataGenerator(object):
 
         # Horizontal text
         if orientation == 0:
-            new_width = int(
-                distorted_img.size[0]
-                * (float(size - vertical_margin) / float(distorted_img.size[1]))
-            )
-            resized_img = distorted_img.resize(
-                (new_width, size - vertical_margin), Image.Resampling.LANCZOS
-            )
-            resized_mask = distorted_mask.resize(
-                (new_width, size - vertical_margin), Image.Resampling.NEAREST
-            )
+            # new_width = int(
+            #     distorted_img.size[0]
+            #     * (float(size - vertical_margin) / float(distorted_img.size[1]))
+            # )
+            new_width = distorted_img.size[0]
+            # resized_img = distorted_img.resize(
+            #     (new_width, size - vertical_margin), Image.Resampling.LANCZOS
+            # )
+            # resized_mask = distorted_mask.resize(
+            #     (new_width, size - vertical_margin), Image.Resampling.NEAREST
+            # )
+            resized_img = distorted_img
+            resized_mask = distorted_mask
             background_width = width if width > 0 else new_width + horizontal_margin
-            background_height = size
+            background_height = distorted_img.size[1] + vertical_margin
         # Vertical text
         elif orientation == 1:
             new_height = int(
