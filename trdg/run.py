@@ -406,9 +406,7 @@ def main():
             for p in os.listdir(args.font_dir)
             if (os.path.splitext(p)[1] == ".ttf" or os.path.splitext(p)[1] == ".otf")
         ]
-        
-        # fonts = [f for f in fonts if (Path(f).stem.startswith("Tajawal"))]
-        # print(fonts)
+
     elif args.font:
         if os.path.isfile(args.font):
             fonts = [args.font]
@@ -425,8 +423,6 @@ def main():
     
     # Creating synthetic sentences (or word)
     strings = []
-    # args.count = len(lang_dict)
-    # print(args.count)
 
     if args.use_wikipedia:
         strings = create_strings_from_wikipedia(args.length, args.count, args.language)
