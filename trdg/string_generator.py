@@ -34,6 +34,9 @@ def create_strings_from_dict(
     Args:
         allow_variable: whether the produced string can have variable length
     """
+    # the following patterns apply for R2L
+    # but because we will use R2L writing for Pillow
+    # starting index is still 0, ending index is still length-1
     # those 16 guys can only be in the end
     ending_chars = ['ة', 'ى', '!', '»', ')', 
                     ']', '}', ';', '*', ',', 
@@ -41,13 +44,13 @@ def create_strings_from_dict(
     # those 6 guys can only be in the beginning
     starting_chars = ['#', '«', '(', '[', '{', '”']
     # those 4 guys can only be either beginning or the end
-    double_end_chars = ['"', '-', '&', '/', '%']
+    double_end_chars = ['"', '-', '&', '/', '%']    
 
     def bad_pattern() -> bool:
         """Return True if it's bad pattern"""
-        if ((i != gen_string_len - 1 and rand_char in ending_chars) or
-            (i != 0 and rand_char in starting_chars) or
-            (0 < i < gen_string_len - 1 and rand_char in double_end_chars)):
+        if ((j != gen_string_len - 1 and rand_char in ending_chars) or
+            (j != 0 and rand_char in starting_chars) or
+            (0 < j < gen_string_len - 1 and rand_char in double_end_chars)):
             return True
         return False
     
