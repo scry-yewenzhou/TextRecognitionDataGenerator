@@ -456,6 +456,8 @@ def main():
         # strings = ['آأءش'] * args.count
         # ['ءش'] * args.count
         # print(strings)
+        # strings = ["ركقح//", "طض}", "«عثفج", ":أضء", "ذكبئ»"]
+        # args.count = 1
         
     # if args.language == "ar":
     #     from arabic_reshaper import ArabicReshaper
