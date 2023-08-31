@@ -12,9 +12,9 @@ Text Run with Basic functions
 ```
 cd /home/PaddleOCR/arabic-recognition-training/
 conda activate paddle
-trdg -l ar \
+trdg -l en \
      -t 8 \
-     -c 200 \
+     -c 20 \
      -w 1 \
      -r \
      -b 1 \
@@ -22,7 +22,7 @@ trdg -l ar \
      -ws \
      --dict ./gen_dictionaries/arabic_and_punc.txt \
      --font_dir ./useful_fonts/ \
-     --output_dir ./synthetic_data/ar-text-200/
+     --output_dir ./synthetic_data/ar-text-20/
 ```
 
 ## With Eastern Arabic numbers dictionary
