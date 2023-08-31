@@ -34,10 +34,8 @@ def create_strings_from_dict(
     Args:
         allow_variable: whether the produced string can have variable length
     """
-    # the following patterns apply for L2R
-    # but because we will use R2L writing for Pillow
-    # starting index is still 0, ending index is still length-1
-    # those 16 guys can only be in the beginning
+    # those chars can only be in the beginning of the word
+    # from left to right
     starting_chars = ['ة', 'ى', '!', '«', '(', 
                       '[', '{', ';', '*', ',', 
                       '.', '“', '،', '؟', '؛', ':', '$']
