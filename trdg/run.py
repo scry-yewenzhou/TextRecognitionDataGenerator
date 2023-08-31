@@ -479,10 +479,7 @@ def main():
         fontsize = [args.format] * len(strings)
 
     string_count = len(strings)
-    # print(fonts)
     rand_fonts = [fonts[rnd.randrange(0, len(fonts))] for _ in range(0, string_count)]
-    # rand_fonts = fonts
-    # print(rand_fonts)
     p = Pool(args.thread_count)
 
 

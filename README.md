@@ -94,3 +94,25 @@ trdg -l en \
      --font_dir ./useful_fonts/ \
      --output_dir ./synthetic_data/en-words-100/
 ```
+
+## Generate Eastern Arabic numbers
+```
+conda activate paddle
+cd /home/PaddleOCR/arabic-recognition-training/
+git checkout eastern-numbers
+trdg -t 8 \
+     -c 20 \
+     -b 1 \
+     -na 2 \
+     -ws \
+     -k 15 -rk \
+     -bl 1 -rbl \
+     --random \
+     --language ar \
+     -tc '#000000,#888888' \
+     --random_fontsize \
+     --random_margin \
+     --dict ./gen_dictionaries/eastern_ar_nums.txt \
+     --font_dir ./latin_fonts/ \
+     --output_dir ./synthetic_data/eastern-0830/
+```
