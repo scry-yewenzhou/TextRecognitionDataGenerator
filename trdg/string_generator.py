@@ -44,7 +44,7 @@ def create_strings_from_dict(
     # those 6 guys can only be in the beginning
     starting_chars = ['#', '«', '(', '[', '{', '”']
     # those 4 guys can only be either beginning or the end
-    double_end_chars = ['"', '-', '&', '/', '%']    
+    double_end_chars = ['"', '-', '&', '/', '%']
 
     def bad_pattern() -> bool:
         """Return True if it's bad pattern"""
