@@ -11,6 +11,7 @@ Text Run with Basic functions
 
 ```
 cd /home/PaddleOCR/arabic-recognition-training/
+git checkout arabic-and-punc-r2l
 conda activate paddle
 trdg -l ar \
      -t 8 \
