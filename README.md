@@ -25,32 +25,6 @@ trdg -l ar \
      --output_dir ./synthetic_data/ar-text-200/
 ```
 
-## With Eastern Arabic numbers dictionary
-
-- random fonts with all fonts in useful_fonts
-- only 1 word per image
-- -r variable length
-- -b 1 background plain white
-- --na 2 name format 2, with labels.txt
-- -ws word split, split on words
-- --dict define dictionary with letters 
-
-```
-cd /home/PaddleOCR/arabic-recognition-training/
-conda activate paddle
-trdg -l ar \
-     -t 8 \
-     -c 100 \
-     -w 1 \
-     -r \
-     -b 1 \
-     -na 2 \
-     -ws \
-     --dict ./gen_dictionaries/eastern_ar_nums.txt \
-     --font_dir ./useful_fonts/ \
-     --output_dir ./synthetic_data/ar-eastern-100/
-```
-
 ## With Arabic words dictionary
 
 - random fonts with all fonts in useful_fonts
@@ -99,9 +73,9 @@ trdg -l en \
 ```
 conda activate paddle
 cd /home/PaddleOCR/arabic-recognition-training/
-git checkout eastern-numbers
+git checkout eastern-numbers-l2r
 trdg -t 8 \
-     -c 10 \
+     -c 100 \
      -b 1 \
      -na 2 \
      -ws \
@@ -111,5 +85,5 @@ trdg -t 8 \
      --language en \
      --dict ./gen_dictionaries/eastern_ar_nums.txt \
      --font_dir ./latin_fonts/ \
-     --output_dir ./synthetic_data/eastern-10/
+     --output_dir ./synthetic_data/eastern-100/
 ```
