@@ -40,9 +40,9 @@ def create_strings_from_dict(
     # those 16 guys can only be in the beginning
     starting_chars = ['ة', 'ى', '!', '«', '(', 
                       '[', '{', ';', '*', ',', 
-                      '.', '“', '،', '؟', '؛', ':', '$']
+                      '.', '“', '،', ':', '$']
     # those 6 guys can only be in the end
-    ending_chars = ['#', '»', ')', ']', '}', '”']
+    ending_chars = ['#', '»', ')', ']', '}', '”', '؟', '؛']
     # those 4 guys can only be either beginning or the end
     double_end_chars = ['"', '-', '&', '/', '%']
 
