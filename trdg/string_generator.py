@@ -46,9 +46,10 @@ def create_strings_from_dict(
     
     # the length varies from 1 to 15
     # average at 5
+    # updated to 1, 16, 6, 4 on 09/12/23, providing a more even distribution
     if allow_variable:
-        lower, upper = 1, 15
-        mu, sigma = 5, 2
+        lower, upper = 1, 16
+        mu, sigma = 6, 4
         X = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
         lengths = X.rvs(count).astype(int)
     else:
