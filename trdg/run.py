@@ -388,12 +388,16 @@ def main():
         lang_dict = []
         if os.path.isfile(args.dict):
             with open(args.dict, "r", encoding="utf8", errors="ignore") as d:
-                lang_dict = [l for l in d.read().splitlines() if len(l) > 0]
+                for line in d.readlines():
+                    word = line.strip()
+                    if word:
+                        if word in ["َِ", "ًٍ"]:
+                            for c in word:
+                                lang_dict.append(c)
+                        else:
+                            lang_dict.append(word)
         else:
             sys.exit("Cannot open dict")
-        # lang_dict = ['آ', 'أ']
-        # lang_dict += ['ة', 'ى']
-        # lang_dict = ['ء', 'ش']
     else:
         lang_dict = load_dict(
             os.path.join(os.path.dirname(__file__), "dicts", args.language + ".txt")
@@ -446,6 +450,7 @@ def main():
         ):
             args.name_format = 2
     else:
+        print(len(lang_dict))
         strings = create_strings_from_dict(
             args.length, args.random, args.count, lang_dict
         )
