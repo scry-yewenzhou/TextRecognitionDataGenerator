@@ -387,15 +387,12 @@ def main():
     if args.dict:
         lang_dict = []
         if os.path.isfile(args.dict):
-            with open(args.dict, "r", encoding="utf8", errors="ignore") as d:
+            with open(args.dict, "r", encoding="utf-8", errors="ignore") as d:
                 for line in d.readlines():
                     word = line.strip()
                     if word:
-                        if word in ["َِ", "ًٍ"]:
-                            for c in word:
-                                lang_dict.append(c)
-                        else:
-                            lang_dict.append(word)
+                        for c in word:
+                            lang_dict.append(c)
         else:
             sys.exit("Cannot open dict")
     else:
