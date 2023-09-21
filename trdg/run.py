@@ -439,11 +439,10 @@ def main():
                 file_name = str(i) + "." + args.extension
                 font = rand_fonts[i]
                 font = Path(font).stem
-                font_size = fontsize[i]
                 label = strings[i]
                 if args.space_width == 0:
                     label = label.replace(" ", "")
-                f.write(f"{file_name}\t{label}\t{font_size}\n")
+                f.write(f"{file_name}\t{label}\n")
 
 if __name__ == "__main__":
     main()
