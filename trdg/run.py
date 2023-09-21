@@ -75,27 +75,6 @@ def parse_arguments():
         default=False,
     )
     parser.add_argument(
-        "-let",
-        "--include_letters",
-        action="store_true",
-        help="Define if random sequences should contain letters. Only works with -rs",
-        default=False,
-    )
-    parser.add_argument(
-        "-num",
-        "--include_numbers",
-        action="store_true",
-        help="Define if random sequences should contain numbers. Only works with -rs",
-        default=False,
-    )
-    parser.add_argument(
-        "-sym",
-        "--include_symbols",
-        action="store_true",
-        help="Define if random sequences should contain symbols. Only works with -rs",
-        default=False,
-    )
-    parser.add_argument(
         "-w",
         "--length",
         type=int,
@@ -147,13 +126,6 @@ def parse_arguments():
         "--random_skew",
         action="store_true",
         help="When set, the skew angle will be randomized between the value set with -k and it's opposite",
-        default=False,
-    )
-    parser.add_argument(
-        "-wk",
-        "--use_wikipedia",
-        action="store_true",
-        help="Use Wikipedia as the source text for the generation, using this paremeter ignores -r, -n, -s",
         default=False,
     )
     parser.add_argument(
@@ -383,23 +355,6 @@ def main():
         if e.errno != errno.EEXIST:
             raise
 
-    # Creating word list
-    if args.dict:
-        lang_dict = []
-        if os.path.isfile(args.dict):
-            with open(args.dict, "r", encoding="utf-8", errors="ignore") as d:
-                for line in d.readlines():
-                    word = line.strip()
-                    if word:
-                        for c in word:
-                            lang_dict.append(c)
-        else:
-            sys.exit("Cannot open dict")
-    else:
-        lang_dict = load_dict(
-            os.path.join(os.path.dirname(__file__), "dicts", args.language + ".txt")
-        )
-
     # Create font (path) list
     if args.font_dir:
         fonts = [
@@ -416,79 +371,21 @@ def main():
     else:
         fonts = load_fonts(args.language)
     
-    if args.top_4_fonts:
-        fonts = [f for f in fonts if (Path(f).stem.startswith("Calibri") or 
-                                      Path(f).stem.startswith("Arial") or
-                                      Path(f).stem.startswith("Tahoma") or
-                                      Path(f).stem.startswith("Courier"))]
-    
-    # Creating synthetic sentences (or word)
-    strings = []
-
-    if args.use_wikipedia:
-        strings = create_strings_from_wikipedia(args.length, args.count, args.language)
-    elif args.input_file != "":
-        strings = create_strings_from_file(args.input_file, args.count)
-    elif args.random_sequences:
-        strings = create_strings_randomly(
-            args.length,
-            args.random,
-            args.count,
-            args.include_letters,
-            args.include_numbers,
-            args.include_symbols,
-            args.language,
-        )
-        # Set a name format compatible with special characters automatically if they are used
-        if args.include_symbols or True not in (
-            args.include_letters,
-            args.include_numbers,
-            args.include_symbols,
-        ):
-            args.name_format = 2
-    else:
-        print(len(lang_dict))
-        strings = create_strings_from_dict(
-            args.length, args.random, args.count, lang_dict
-        )
-        # strings = lang_dict
-        # args.count = 4
-        # strings = ['آأ'] * args.count
-        # strings = ['حش'] * args.count
-        # strings = ['آأءش'] * args.count
-        # ['ءش'] * args.count
-        # print(strings)
-        # strings = ["ركقح//", "طض}", "«عثفج", ":أضء", "ذكبئ»"]
-        # args.count = 1
-        
-    # if args.language == "ar":
-    #     from arabic_reshaper import ArabicReshaper
-    #     from bidi.algorithm import get_display
-        # print("before", strings)
-
-    if args.case == "upper":
-        strings = [x.upper() for x in strings]
-    if args.case == "lower":
-        strings = [x.lower() for x in strings]
+    # the 2 holly words that mean Allah and For Allah
+    words = ["الله", "لله"]
+    strings = rnd.choices(words, k=args.count)
 
     if args.random_fontsize:
-        # from 9pt - 26pt
-        # which is 12px - 38px
-        # most popular 13pt (17px)
-        lower, upper = 12, 38
-        mu, sigma = 17, 9
+        lower, upper = 20, 70
+        mu, sigma = 41, 10.3
         Fontsize = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
         fontsize = Fontsize.rvs(len(strings)).astype(int)
     else:
         fontsize = [args.format] * len(strings)
 
     string_count = len(strings)
-    # print(fonts)
     rand_fonts = [fonts[rnd.randrange(0, len(fonts))] for _ in range(0, string_count)]
-    # rand_fonts = fonts
-    # print(rand_fonts)
     p = Pool(args.thread_count)
-
 
     for _ in tqdm(
         p.imap_unordered(
@@ -542,23 +439,11 @@ def main():
                 file_name = str(i) + "." + args.extension
                 font = rand_fonts[i]
                 font = Path(font).stem
+                font_size = fontsize[i]
                 label = strings[i]
                 if args.space_width == 0:
                     label = label.replace(" ", "")
-                f.write(f"{file_name}\t{label}\n")
-
-        # with open(
-        #     os.path.join(args.output_dir, "labels.txt"), "r", encoding="utf8"
-        # ) as f:
-        #     labels = []
-        #     for line in f.readlines():
-        #         try:
-        #             image, font, label = line.strip().split("\t")
-        #             labels.append(label)
-        #         except ValueError:
-        #             print("error", line)
-        #     print("after", labels)
-
+                f.write(f"{file_name}\t{label}\t{font_size}\n")
 
 if __name__ == "__main__":
     main()
