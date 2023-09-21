@@ -391,9 +391,6 @@ def main():
                 lang_dict = [l for l in d.read().splitlines() if len(l) > 0]
         else:
             sys.exit("Cannot open dict")
-        # lang_dict = ['آ', 'أ']
-        # lang_dict += ['ة', 'ى']
-        # lang_dict = ['ء', 'ش']
     else:
         lang_dict = load_dict(
             os.path.join(os.path.dirname(__file__), "dicts", args.language + ".txt")
@@ -449,18 +446,6 @@ def main():
         strings = create_strings_from_dict(
             args.length, args.random, args.count, lang_dict
         )
-        # strings = lang_dict
-        # args.count = 4
-        # strings = ['آأ'] * args.count
-        # strings = ['حش'] * args.count
-        # strings = ['آأءش'] * args.count
-        # ['ءش'] * args.count
-        # print(strings)
-        
-    # if args.language == "ar":
-    #     from arabic_reshaper import ArabicReshaper
-    #     from bidi.algorithm import get_display
-        # print("before", strings)
 
     if args.case == "upper":
         strings = [x.upper() for x in strings]
@@ -468,11 +453,8 @@ def main():
         strings = [x.lower() for x in strings]
 
     if args.random_fontsize:
-        # from 9pt - 26pt
-        # which is 12px - 38px
-        # most popular 13pt (17px)
-        lower, upper = 12, 38
-        mu, sigma = 17, 9
+        lower, upper = 20, 40
+        mu, sigma = 24, 2.5
         Fontsize = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
         fontsize = Fontsize.rvs(len(strings)).astype(int)
     else:
@@ -539,19 +521,6 @@ def main():
                 if args.space_width == 0:
                     label = label.replace(" ", "")
                 f.write(f"{file_name}\t{label}\n")
-
-        # with open(
-        #     os.path.join(args.output_dir, "labels.txt"), "r", encoding="utf8"
-        # ) as f:
-        #     labels = []
-        #     for line in f.readlines():
-        #         try:
-        #             image, font, label = line.strip().split("\t")
-        #             labels.append(label)
-        #         except ValueError:
-        #             print("error", line)
-        #     print("after", labels)
-
 
 if __name__ == "__main__":
     main()
