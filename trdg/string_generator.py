@@ -27,56 +27,21 @@ def create_strings_from_file(filename: str, count: int) -> List[str]:
 
 
 def create_strings_from_dict(
-    length: int, allow_variable: bool, count: int, lang_dict: List[str]
-) -> List[str]:
+    count: int, word_list: List[str]
+) -> list:
     """
-    Create all strings by picking X random word in the dictionnary
+    Get all words from word_list, if not enough, then randomly pull the remaining words
     Args:
-        allow_variable: whether the produced string can have variable length
+        count (int): the number of words to generate
+        word_list (list): word list of Arabic words
     """
-    # the following patterns apply for L2R
-    # but because we will use R2L writing for Pillow
-    # starting index is still 0, ending index is still length-1
-    # those 16 guys can only be in the beginning
-    starting_chars = ['ة', 'ى', '!', '«', '(', 
-                      '[', '{', ';', '*', ',', 
-                      '.', '“', '،', ':', '$']
-    # those 6 guys can only be in the end
-    ending_chars = ['#', '»', ')', ']', '}', '”', '؟', '؛']
-    # those 4 guys can only be either beginning or the end
-    double_end_chars = ['"', '-', '&', '/', '%']
-
-
-    def bad_pattern() -> bool:
-        """Return True if it's bad pattern"""
-        if ((j != gen_string_len - 1 and rand_char in ending_chars) or
-            (j != 0 and rand_char in starting_chars) or
-            (0 < j < gen_string_len - 1 and rand_char in double_end_chars)):
-            return True
-        return False
-    
-    # the length varies from 1 to 15
-    # average at 5
-    if allow_variable:
-        lower, upper = 1, 15
-        mu, sigma = 5, 2
-        X = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
-        lengths = X.rvs(count).astype(int)
-    else:
-        lengths = [length] * count
-
-    dict_len = len(lang_dict)
-    strings = []
-    for i in range(count):
-        current_string = ""
-        gen_string_len = lengths[i]
-        for j in range(gen_string_len):
-            rand_char = lang_dict[rnd.randrange(dict_len)]
-            while bad_pattern():
-                rand_char = lang_dict[rnd.randrange(dict_len)]
-            current_string += rand_char
-        strings.append(current_string)
-    return strings
+    remaining = count - len(word_list)
+    if remaining > 0:
+        return word_list + list(np.random.choice(word_list, size=remaining, replace=False))
+    if remaining == 0:
+        return word_list
+    if remaining < 0:
+        return list(np.random.choice(word_list, size=count, replace=False))
 
 
 def get_random_page_content() -> str:

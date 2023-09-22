@@ -444,7 +444,7 @@ def main():
             args.name_format = 2
     else:
         strings = create_strings_from_dict(
-            args.length, args.random, args.count, lang_dict
+            args.count, lang_dict
         )
 
     if args.case == "upper":
