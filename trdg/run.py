@@ -457,8 +457,8 @@ def main():
         strings = [x.lower() for x in strings]
 
     if args.random_fontsize:
-        lower, upper = 20, 70
-        mu, sigma = 41, 10.3
+        lower, upper = 20, 60
+        mu, sigma = 41, 10
         Fontsize = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
         fontsize = Fontsize.rvs(len(strings)).astype(int)
     else:
