@@ -62,8 +62,8 @@ class FakeTextDataGenerator(object):
         image = None
 
         if random_margin:
-            lower, upper = 0, 10
-            mu, sigma = 3, 4
+            lower, upper = 0, 5
+            mu, sigma = 1, 3
             X = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
             margins = X.rvs(4).astype(int)
 
