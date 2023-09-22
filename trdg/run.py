@@ -447,24 +447,9 @@ def main():
         ):
             args.name_format = 2
     else:
-        print(len(lang_dict))
         strings = create_strings_from_dict(
             args.length, args.random, args.count, lang_dict
         )
-        # strings = lang_dict
-        # args.count = 4
-        # strings = ['آأ'] * args.count
-        # strings = ['حش'] * args.count
-        # strings = ['آأءش'] * args.count
-        # ['ءش'] * args.count
-        # print(strings)
-        # strings = ["ركقح//", "طض}", "«عثفج", ":أضء", "ذكبئ»"]
-        # args.count = 1
-        
-    # if args.language == "ar":
-    #     from arabic_reshaper import ArabicReshaper
-    #     from bidi.algorithm import get_display
-        # print("before", strings)
 
     if args.case == "upper":
         strings = [x.upper() for x in strings]
@@ -472,21 +457,15 @@ def main():
         strings = [x.lower() for x in strings]
 
     if args.random_fontsize:
-        # from 9pt - 26pt
-        # which is 12px - 38px
-        # most popular 13pt (17px)
-        lower, upper = 12, 38
-        mu, sigma = 17, 9
+        lower, upper = 20, 70
+        mu, sigma = 41, 10.3
         Fontsize = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
         fontsize = Fontsize.rvs(len(strings)).astype(int)
     else:
         fontsize = [args.format] * len(strings)
 
     string_count = len(strings)
-    # print(fonts)
     rand_fonts = [fonts[rnd.randrange(0, len(fonts))] for _ in range(0, string_count)]
-    # rand_fonts = fonts
-    # print(rand_fonts)
     p = Pool(args.thread_count)
 
 
@@ -546,18 +525,6 @@ def main():
                 if args.space_width == 0:
                     label = label.replace(" ", "")
                 f.write(f"{file_name}\t{label}\n")
-
-        # with open(
-        #     os.path.join(args.output_dir, "labels.txt"), "r", encoding="utf8"
-        # ) as f:
-        #     labels = []
-        #     for line in f.readlines():
-        #         try:
-        #             image, font, label = line.strip().split("\t")
-        #             labels.append(label)
-        #         except ValueError:
-        #             print("error", line)
-        #     print("after", labels)
 
 
 if __name__ == "__main__":
