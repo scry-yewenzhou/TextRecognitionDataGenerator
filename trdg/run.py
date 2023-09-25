@@ -311,7 +311,7 @@ def parse_arguments():
         help="Generate upper or lowercase only. arguments: upper or lower. Example: --case upper",
     )
     parser.add_argument(
-        "-dt", "--dict", type=str, nargs="?", help="Define the dictionary to be used"
+        "-dd", "--dict_directory", type=str, nargs="?", help="Define the directory of dictionaries"
     )
     parser.add_argument(
         "-ws",
@@ -383,23 +383,6 @@ def main():
         if e.errno != errno.EEXIST:
             raise
 
-    # Creating word list
-    if args.dict:
-        lang_dict = []
-        if os.path.isfile(args.dict):
-            with open(args.dict, "r", encoding="utf-8", errors="ignore") as d:
-                for line in d.readlines():
-                    word = line.strip()
-                    if word:
-                        for c in word:
-                            lang_dict.append(c)
-        else:
-            sys.exit("Cannot open dict")
-    else:
-        lang_dict = load_dict(
-            os.path.join(os.path.dirname(__file__), "dicts", args.language + ".txt")
-        )
-
     # Create font (path) list
     if args.font_dir:
         fonts = [
@@ -448,7 +431,7 @@ def main():
             args.name_format = 2
     else:
         strings = create_strings_from_dict(
-            args.length, args.random, args.count, lang_dict
+            args.length, args.random, args.count, args.dict_directory
         )
 
     if args.case == "upper":
@@ -457,7 +440,7 @@ def main():
         strings = [x.lower() for x in strings]
 
     if args.random_fontsize:
-        lower, upper = 20, 60
+        lower, upper = 25, 55
         mu, sigma = 41, 10
         Fontsize = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
         fontsize = Fontsize.rvs(len(strings)).astype(int)

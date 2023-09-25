@@ -4,6 +4,7 @@ from typing import List
 import numpy as np
 import scipy.stats as stats
 import wikipedia
+import os
 
 
 def create_strings_from_file(filename: str, count: int) -> List[str]:
@@ -27,53 +28,43 @@ def create_strings_from_file(filename: str, count: int) -> List[str]:
 
 
 def create_strings_from_dict(
-    length: int, allow_variable: bool, count: int, lang_dict: List[str]
+    length: int, allow_variable: bool, count: int, dict_dir: str
 ) -> List[str]:
     """
     Create all strings by picking X random word in the dictionnary
     Args:
-        allow_variable: whether the produced string can have variable length
+        length (str): length of each generated string
+        allow_variable (bool): whether the string length is a variable
+        count (int): number of strings to generate for each dict.
+        dict_dir (str): directory of dicts
     """
-    # those chars can only be in the beginning of the word
-    # from left to right
-    starting_chars = ['ة', 'ى', '!', '«', '(', 
-                      '[', '{', ';', '*', ',', 
-                      '.', '“', '،', ':']
-    # those 6 guys can only be in the end
-    ending_chars = ['#', '»', ')', ']', '}', '”', '؛', '؟']
-    # those 4 guys can only be either beginning or the end
-    double_end_chars = ['"', '-', '&', '/']
-
-
-    def bad_pattern() -> bool:
-        """Return True if it's bad pattern"""
-        if ((j != gen_string_len - 1 and rand_char in ending_chars) or
-            (j != 0 and rand_char in starting_chars) or
-            (0 < j < gen_string_len - 1 and rand_char in double_end_chars)):
-            return True
-        return False
     
-    # the length varies from 1 to 15
-    # average at 5
-    if allow_variable:
-        lower, upper = 1, 16
-        mu, sigma = 6, 4
-        X = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
-        lengths = X.rvs(count).astype(int)
-    else:
-        lengths = [length] * count
-
-    dict_len = len(lang_dict)
     strings = []
-    for i in range(count):
-        current_string = ""
-        gen_string_len = lengths[i]
-        for j in range(gen_string_len):
-            rand_char = lang_dict[rnd.randrange(dict_len)]
-            while bad_pattern():
-                rand_char = lang_dict[rnd.randrange(dict_len)]
-            current_string += rand_char
-        strings.append(current_string)
+    for dict in os.listdir(dict_dir):
+        lang_dict = []
+        dict_path = os.path.join(dict_dir, dict)
+        if os.path.isfile(dict_path):
+            with open(dict_path, "r", encoding="utf-8", errors="ignore") as d:
+                for line in d.readlines():
+                    word = line.strip()
+                    if word:
+                        for c in word:
+                            lang_dict.append(c)
+
+        # the length varies from 1 to 15
+        # average at 5
+        if allow_variable:
+            lower, upper = 1, 16
+            mu, sigma = 6, 4
+            X = stats.truncnorm((lower - mu) / sigma, (upper - mu) / sigma, loc=mu, scale=sigma)
+            lengths = X.rvs(count).astype(int)
+        else:
+            lengths = [length] * count
+
+        for i in range(count):
+            cur_str_list = list(np.random.choice(lang_dict, size=lengths[i], replace=True))
+            strings.append("".join(cur_str_list))
+
     return strings
 
 
