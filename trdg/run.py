@@ -490,7 +490,7 @@ def main():
                 [args.language] * string_count,
             ),
         ),
-        total=args.count,
+        total=args.count * len(os.listdir(args.dict_directory)),
     ):
         pass
     p.terminate()
