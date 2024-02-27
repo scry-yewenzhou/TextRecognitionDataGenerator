@@ -365,6 +365,13 @@ def parse_arguments():
         help="whether use only top 4 fonts",
         default=False,
     )
+    parser.add_argument(
+        "-test",
+        "--test_fonts",
+        action="store_true",
+        help="Test whether all fonts can draw all the glyphs",
+        default=False,
+    )
     return parser.parse_args()
 
 
@@ -404,7 +411,7 @@ def main():
         fonts = [
             os.path.join(args.font_dir, p)
             for p in os.listdir(args.font_dir)
-            if (os.path.splitext(p)[1] == ".ttf" or os.path.splitext(p)[1] == ".otf")
+            if (os.path.splitext(p)[1].lower() == ".ttf" or os.path.splitext(p)[1].lower() == ".otf")
         ]
 
     elif args.font:
@@ -467,6 +474,14 @@ def main():
     rand_fonts = [fonts[rnd.randrange(0, len(fonts))] for _ in range(0, string_count)]
     p = Pool(args.thread_count)
 
+    if args.test_fonts:
+        # get fonts
+        rand_fonts = fonts
+        # get length of strings
+        string_count = len(fonts)
+        # generate strings
+        strings = ["".join(lang_dict)] * string_count
+
 
     for _ in tqdm(
         p.imap_unordered(
@@ -523,7 +538,7 @@ def main():
                 label = strings[i]
                 if args.space_width == 0:
                     label = label.replace(" ", "")
-                f.write(f"{file_name}\t{label}\n")
+                f.write(f"{file_name}\t{label}\t{font}\n")
 
 if __name__ == "__main__":
     main()
